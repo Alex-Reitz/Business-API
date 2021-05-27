@@ -31,7 +31,6 @@ router.get("/:code", async function (req, res, next) {
 //Post route to add a company
 router.post("/", async function (req, res, next) {
   try {
-    console.log(req.body);
     const { code, name, description } = req.body;
     const result = await db.query(
       `INSERT INTO companies (code, name, description) 
@@ -48,7 +47,6 @@ router.post("/", async function (req, res, next) {
 router.patch("/:code", async function (req, res, next) {
   try {
     const { name, description } = req.body;
-    console.log(req.params.code);
     const result = await db.query(
       `UPDATE companies SET  name=$1, description=$2
              WHERE code=$3
