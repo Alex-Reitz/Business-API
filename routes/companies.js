@@ -1,6 +1,7 @@
 //Get all companies
 const express = require("express");
-const router = express.Router();
+const router = new express.Router();
+const slugify = require("slugify");
 const db = require("../db");
 
 router.get("/", async function (req, res, next) {
@@ -32,6 +33,7 @@ router.get("/:code", async function (req, res, next) {
 router.post("/", async function (req, res, next) {
   try {
     const { code, name, description } = req.body;
+    let code = slugify(name, { lower: true });
     const result = await db.query(
       `INSERT INTO companies (code, name, description) 
     VALUES ($1, $2, $3)
@@ -44,16 +46,21 @@ router.post("/", async function (req, res, next) {
   }
 });
 //Put to edit an existing company
-router.patch("/:code", async function (req, res, next) {
+router.put("/:code", async function (req, res, next) {
   try {
     const { name, description } = req.body;
+    let code = req.params.code;
     const result = await db.query(
       `UPDATE companies SET  name=$1, description=$2
              WHERE code=$3
-             RETURNING name, description`,
-      [name, description, req.params.code]
+             RETURNING code, name, description`,
+      [name, description, code]
     );
-    return res.json(result.rows[0]);
+    if (result.rows.length === 0) {
+      throw new ExpressError(`No such company: ${code}, 404`);
+    } else {
+      return res.json({ Company: result.rows[0] });
+    }
   } catch (err) {
     return next(err);
   }
